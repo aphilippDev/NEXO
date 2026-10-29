@@ -6,20 +6,20 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Task {
-    private UUID id;
+    private final UUID id;
     private String title;
     private String description;
     private Recurrence recurrence;
-    private LocalDateTime createdAt;
+    private final LocalDateTime createdAt;
     private LocalDate dueDate;
 
     public Task(UUID id, String title, String description, Recurrence recurrence, LocalDateTime createdAt, LocalDate dueDate){
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.recurrence = recurrence;
-        this.createdAt = createdAt;
-        this.dueDate = dueDate;
+        this.id = Objects.requireNonNull(id, "El id no puede ser null");
+        this.title = validateTitle(title);
+        this.description = Objects.requireNonNull(description, "La descripción no puede ser null");
+        this.recurrence =  Objects.requireNonNull(recurrence, "La recurrencia no puede ser nula");
+        this.createdAt = Objects.requireNonNull(createdAt, "La fecha de creación no puede ser nula");
+        this.dueDate = validateDueDate(dueDate, createdAt);
     }
 
     //Getters
@@ -30,13 +30,27 @@ public class Task {
     public LocalDateTime getCreatedAt(){return createdAt;}
     public LocalDate getDueDate(){return dueDate;}
 
+    //validates
+    private static  String validateTitle(String nombre){
+        Objects.requireNonNull(nombre, "El título no puede ser null");
+        if(nombre.isBlank()){
+            throw new IllegalArgumentException("El título no puede estar vacío");
+        }
+        return nombre.strip();
+    }
+    private static  LocalDate validateDueDate(LocalDate dueDate, LocalDateTime createdAt){
+        Objects.requireNonNull(dueDate, "La fecha de vencimiento no puede ser null");
+        if(dueDate.isBefore(createdAt.toLocalDate())){
+            throw new IllegalArgumentException("La fecha de vencimiento no puede ser anterior a la fecha de creación");
+        }
+        return dueDate;
+    }
+
     //Setters
-    public void setId(UUID id){ this.id=id;}
-    public void setTitle(String titleTask){ this.title=titleTask;}
-    public void setDescription(String description){ this.description=description;}
-    public void setRecurrence(Recurrence recurrence){ this.recurrence=recurrence;}
-    public void setCreatedAt(LocalDateTime createdAt){ this.createdAt=createdAt;}
-    public void setDueDate(LocalDate dueDate){ this.dueDate= dueDate;}
+    public void setTitle(String title){this.title=validateTitle(title);}
+    public void setDescription(String description){ this.description= Objects.requireNonNull(description, "La descripción no puede ser null");}
+    public void setRecurrence(Recurrence recurrence){ this.recurrence=Objects.requireNonNull(recurrence, "La recurrencia no puede ser nula");}
+    public void setDueDate(LocalDate dueDate){ this.dueDate=validateDueDate(dueDate, createdAt);}
 
     //equals
     @Override
@@ -55,6 +69,6 @@ public class Task {
     //toString
     @Override
     public String toString(){
-        return "Task{Id= "+id+", Title= "+title+", Description= "+description+",\nFrequency= "+recurrence+", Creation Date= " +createdAt+", Due Date= "+dueDate+"}";
+        return "Task{Id= "+id+", Title= "+title+", Description= "+description+", Recurrence= "+recurrence+", Creation Date= " +createdAt+", Due Date= "+dueDate+"}";
     }
 }
